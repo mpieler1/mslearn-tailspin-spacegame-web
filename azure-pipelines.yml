@@ -1,5 +1,4 @@
-trigger:
-- '*'
+trigger: none
 
 pool:
   vmImage: 'ubuntu-20.04'
@@ -46,6 +45,13 @@ steps:
     projects: '**/*.csproj'
 
 - task: DotNetCoreCLI@2
+  displayName: 'Test the project'
+  inputs:
+    command: 'test'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
   displayName: 'Publish the project - $(buildConfiguration)'
   inputs:
     command: 'publish'
@@ -53,6 +59,12 @@ steps:
     publishWebProjects: false
     arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
     zipAfterPublish: true
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: '**.bicep'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/Bicep'
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: drop'
